@@ -10,6 +10,8 @@ defmodule DeliveryCenterWeb.Router do
 
     scope "/delivery" do
       get "/", DeliveryController, :index
+      post "/", DeliveryController, :create
+      get "/:id", DeliveryController, :show
     end
   end
 

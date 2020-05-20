@@ -28,3 +28,5 @@ delivery_center-*.tar
 /priv/static/
 
 .elixir_ls/
+
+coverage
