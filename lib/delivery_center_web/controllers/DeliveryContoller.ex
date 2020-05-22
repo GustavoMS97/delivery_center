@@ -11,6 +11,12 @@ defmodule DeliveryCenterWeb.DeliveryController do
     |> json(%{code: "200"})
   end
 
+  def teste(conn, _params) do
+    conn
+    |> put_status(200)
+    |> json(%{res: conn.body_params})
+  end
+
   def create(conn, _params) do
     try do
       # Extrair dados do corpo da requisição
@@ -36,20 +42,36 @@ defmodule DeliveryCenterWeb.DeliveryController do
           order
         )
 
-      # Enviar requisição
-      conn
-      |> put_status(200)
-      |> json(dc_req)
+      {:ok, res} = JSON.Encoder.encode(dc_req)
+
+      IO.inspect(res)
+
+      %HTTPoison.Response{body: body, status_code: status_code} =
+        HTTPoison.post!("https://delivery-center-recruitment-ap.herokuapp.com", res, [
+          {"Content-Type", "application/json"}
+        ])
+
+      IO.inspect(body)
+
+      case status_code do
+        200 ->
+          conn
+          |> put_status(200)
+          |> json(dc_req)
+
+        _ ->
+          raise "Delivery Center server refused to accept the sent data."
+      end
     rescue
       MatchError ->
         conn
         |> put_status(422)
         |> json(%{reason: "Error parsing data"})
 
-      e in RuntimeError ->
+      e ->
         conn
         |> put_status(500)
-        |> json(%{reason: e.message})
+        |> json(%{reason: e.message || "Internal error"})
     end
   end
 
